@@ -737,8 +737,8 @@
           <div class="logo-sub">Pre-Order</div>
         </header>
         <div class="banner">
-          Orders open every 2 weeks on Friday &nbsp;·&nbsp; Delivery the
-          following Saturday
+          Orders open every 2 weeks on Friday &nbsp;·&nbsp; Delivery & Pickup
+          options available
         </div>
         <div
           id="order-banner"
@@ -1657,49 +1657,7 @@
     </div>
 
     <script>
-      // ── Delivery date logic ──
-      function getDeliveryDates() {
-        const today = new Date();
-
-        // CHANGED: Baseline anchor shifted to Friday May 22, 2026
-        const anchorDate = new Date(2026, 4, 22);
-        const msInTwoWeeks = 14 * 24 * 60 * 60 * 1000;
-
-        // Calculate how many 2-week operational blocks have passed since May 22
-        let intervalsElapsed = Math.floor(
-          (today.getTime() - anchorDate.getTime()) / msInTwoWeeks
-        );
-        if (intervalsElapsed < 0) intervalsElapsed = 0;
-
-        // Establishes the active operational Friday for this cycle
-        let friday = new Date(
-          anchorDate.getTime() + intervalsElapsed * msInTwoWeeks
-        );
-
-        // If that active Friday has already passed, snap forward 14 days to the next active batch
-        if (today > friday) {
-          friday = new Date(friday.getTime() + msInTwoWeeks);
-        }
-
-        // Saturday is always exactly 1 day after your active operational Friday
-        let saturday = new Date(friday.getTime());
-        saturday.setDate(friday.getDate() + 1);
-
-        return { friday, saturday };
-      }
-
-      function setCustomTip(val) {
-        tipCustom = parseFloat(val) || 0;
-        tipPct = 0;
-        [8, 10, 12].forEach((p) =>
-          document.getElementById('tip-' + p).classList.remove('on')
-        );
-        refresh();
-      }
-      // Update the single delivery day label
-      const satLabelEl = document.getElementById('sat-label');
-      if (satLabelEl) satLabelEl.textContent = satFmt;
-
+      // 1. INITIALIZE GLOBAL DATA STRUCTURES & BUSINESS VARIABLES FIRST
       const P = {
         duo: 27,
         family: 51,
@@ -1742,7 +1700,63 @@
         newwest: { label: 'New Westminster', fee: 6, threshold: 60 },
         coquitlam: { label: 'Coquitlam', fee: 8, threshold: 70 },
       };
-      let mode = 'delivery';
+
+      let mode = 'delivery'; // Declared and ready for setMode() loops
+      let deliveryDay = 'saturday';
+      let tipPct = 0;
+      let tipCustom = 0;
+
+      // 2. DEFINE SYSTEM LOGIC & MATH ENGINES
+      function getDeliveryDates() {
+        const today = new Date();
+        const anchorDate = new Date(2026, 4, 22); // Friday May 22, 2026
+        const msInTwoWeeks = 14 * 24 * 60 * 60 * 1000;
+
+        let intervalsElapsed = Math.floor(
+          (today.getTime() - anchorDate.getTime()) / msInTwoWeeks
+        );
+        if (intervalsElapsed < 0) intervalsElapsed = 0;
+
+        let friday = new Date(
+          anchorDate.getTime() + intervalsElapsed * msInTwoWeeks
+        );
+
+        if (today > friday) {
+          friday = new Date(friday.getTime() + msInTwoWeeks);
+        }
+
+        let saturday = new Date(friday.getTime());
+        saturday.setDate(friday.getDate() + 1);
+
+        return { friday, saturday };
+      }
+
+      function fmtDate(d) {
+        return d.toLocaleDateString('en-CA', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+        });
+      }
+
+      // 3. EXECUTE LIFECYCLE RENDER PASSES AFTER DEPENDENCIES ARE DECLARED
+      const { friday: delivFri, saturday: delivSat } = getDeliveryDates();
+      const friFmt = fmtDate(delivFri);
+      const satFmt = fmtDate(delivSat);
+
+      // DOM UI Element Sync Blocks
+      document.getElementById('delivery-window').textContent = satFmt;
+      const satLabelEl = document.getElementById('sat-label');
+      if (satLabelEl) satLabelEl.textContent = satFmt;
+
+      function setCustomTip(val) {
+        tipCustom = parseFloat(val) || 0;
+        tipPct = 0;
+        [8, 10, 12].forEach((p) =>
+          document.getElementById('tip-' + p).classList.remove('on')
+        );
+        refresh();
+      }
 
       function adj(k, d) {
         if (
@@ -1850,7 +1864,7 @@
           document.getElementById('pickup-time-row').style.display = 'none';
         }
 
-        // Set min/max dates for pickup (Restricted to the current active Friday/Saturday cycle)
+        // Updated Pickup Window: Opens Sunday (Day after delivery) for 7 full days
         if (m === 'pickup') {
           const picker = document.getElementById('f-pickup-date');
           const toLocal = (d) => {
@@ -1860,16 +1874,25 @@
             return y + '-' + mo + '-' + day;
           };
 
-          // Limits user calendar picker choices precisely to your active operational weekend
-          picker.min = toLocal(delivFri);
-          picker.max = toLocal(delivSat);
+          // Calculate Sunday (1 day after delivery Saturday)
+          const windowStart = new Date(delivSat.getTime());
+          windowStart.setDate(delivSat.getDate() + 1);
 
+          // Calculate the following Saturday (7 days after delivery Saturday)
+          const windowEnd = new Date(delivSat.getTime());
+          windowEnd.setDate(delivSat.getDate() + 7);
+
+          // Set the HTML date picker constraints
+          picker.min = toLocal(windowStart);
+          picker.max = toLocal(windowEnd);
+
+          // Default the selected date to the first day of the window if empty or out of bounds
           if (
             !picker.value ||
             picker.value < picker.min ||
             picker.value > picker.max
           ) {
-            picker.value = toLocal(delivFri);
+            picker.value = toLocal(windowStart);
           }
           document.getElementById('pickup-time-row').style.display = 'block';
         }
@@ -1919,14 +1942,14 @@
               !document.getElementById('f-pickup-date').value,
             'Please select a pickup date.',
           ],
-          [
-            mode === 'pickup' &&
-              document.getElementById('f-pickup-date').value &&
-              new Date(
-                document.getElementById('f-pickup-date').value + 'T12:00:00'
-              ).getDay() === 6,
-            'Pickup is not available on Saturdays. Please select another date.',
-          ],
+          // [
+          //   mode === 'pickup' &&
+          //     document.getElementById('f-pickup-date').value &&
+          //     new Date(
+          //       document.getElementById('f-pickup-date').value + 'T12:00:00'
+          //     ).getDay() === 6,
+          //   'Pickup is not available on Saturdays. Please select another date.',
+          // ],
           [
             mode === 'pickup' &&
               document.getElementById('f-pickup-date').value &&
