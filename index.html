@@ -1657,22 +1657,33 @@
 
     <script>
       // ── Delivery date logic ──
+      // ── Delivery date logic ──
       function getDeliveryDates() {
         const today = new Date();
-        const day = today.getDay();
-        // Special case: week of May 13 2026 — delivery is Sat May 23 only
-        const cutoff = new Date(2026, 4, 16, 23, 59, 59);
-        if (today <= cutoff) {
-          return {
-            friday: new Date(2026, 4, 22),
-            saturday: new Date(2026, 4, 23),
-          };
+
+        // Hard business baseline anchor Saturday: May 23, 2026
+        const anchorDate = new Date(2026, 4, 23);
+        const msInTwoWeeks = 14 * 24 * 60 * 60 * 1000;
+
+        // Calculate how many 2-week operational blocks have passed since May 23
+        let intervalsElapsed = Math.floor(
+          (today.getTime() - anchorDate.getTime()) / msInTwoWeeks
+        );
+        if (intervalsElapsed < 0) intervalsElapsed = 0;
+
+        let saturday = new Date(
+          anchorDate.getTime() + intervalsElapsed * msInTwoWeeks
+        );
+
+        // If that active Saturday has already passed, snap forward 14 days to the next active weekend
+        if (today > saturday) {
+          saturday = new Date(saturday.getTime() + msInTwoWeeks);
         }
-        const daysUntilFriday = day === 5 ? 7 : (5 - day + 7) % 7;
-        const friday = new Date(today);
-        friday.setDate(today.getDate() + daysUntilFriday);
-        const saturday = new Date(friday);
-        saturday.setDate(friday.getDate() + 1);
+
+        // Friday is always exactly 1 day before your active operational Saturday
+        let friday = new Date(saturday.getTime());
+        friday.setDate(saturday.getDate() - 1);
+
         return { friday, saturday };
       }
 
@@ -1876,20 +1887,27 @@
           document.getElementById('pickup-time-row').style.display = 'none';
         }
 
-        // Set min/max dates for pickup (upcoming Fri through the Friday after)
+        // Set min/max dates for pickup (Restricted to the current active Friday/Saturday cycle)
         if (m === 'pickup') {
           const picker = document.getElementById('f-pickup-date');
-          const nextFri = new Date(delivFri);
-          nextFri.setDate(delivFri.getDate() + 7);
           const toLocal = (d) => {
             const y = d.getFullYear();
             const mo = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
             return y + '-' + mo + '-' + day;
           };
+
+          // Limits user calendar picker choices precisely to your active operational weekend
           picker.min = toLocal(delivFri);
-          picker.max = toLocal(nextFri);
-          if (!picker.value) picker.value = toLocal(delivFri);
+          picker.max = toLocal(delivSat);
+
+          if (
+            !picker.value ||
+            picker.value < picker.min ||
+            picker.value > picker.max
+          ) {
+            picker.value = toLocal(delivFri);
+          }
           document.getElementById('pickup-time-row').style.display = 'block';
         }
         refresh();
