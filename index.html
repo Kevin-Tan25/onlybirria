@@ -737,7 +737,8 @@
           <div class="logo-sub">Pre-Order</div>
         </header>
         <div class="banner">
-          Orders open every Friday &nbsp;·&nbsp; Delivery the following Saturday
+          Orders open every 2 weeks on Friday &nbsp;·&nbsp; Delivery the
+          following Saturday
         </div>
         <div
           id="order-banner"
@@ -1657,72 +1658,34 @@
 
     <script>
       // ── Delivery date logic ──
-      // ── Delivery date logic ──
       function getDeliveryDates() {
         const today = new Date();
 
-        // Hard business baseline anchor Saturday: May 23, 2026
-        const anchorDate = new Date(2026, 4, 23);
+        // CHANGED: Baseline anchor shifted to Friday May 22, 2026
+        const anchorDate = new Date(2026, 4, 22);
         const msInTwoWeeks = 14 * 24 * 60 * 60 * 1000;
 
-        // Calculate how many 2-week operational blocks have passed since May 23
+        // Calculate how many 2-week operational blocks have passed since May 22
         let intervalsElapsed = Math.floor(
           (today.getTime() - anchorDate.getTime()) / msInTwoWeeks
         );
         if (intervalsElapsed < 0) intervalsElapsed = 0;
 
-        let saturday = new Date(
+        // Establishes the active operational Friday for this cycle
+        let friday = new Date(
           anchorDate.getTime() + intervalsElapsed * msInTwoWeeks
         );
 
-        // If that active Saturday has already passed, snap forward 14 days to the next active weekend
-        if (today > saturday) {
-          saturday = new Date(saturday.getTime() + msInTwoWeeks);
+        // If that active Friday has already passed, snap forward 14 days to the next active batch
+        if (today > friday) {
+          friday = new Date(friday.getTime() + msInTwoWeeks);
         }
 
-        // Friday is always exactly 1 day before your active operational Saturday
-        let friday = new Date(saturday.getTime());
-        friday.setDate(saturday.getDate() - 1);
+        // Saturday is always exactly 1 day after your active operational Friday
+        let saturday = new Date(friday.getTime());
+        saturday.setDate(friday.getDate() + 1);
 
         return { friday, saturday };
-      }
-
-      function fmtDate(d) {
-        return d.toLocaleDateString('en-CA', {
-          weekday: 'short',
-          month: 'short',
-          day: 'numeric',
-        });
-      }
-
-      const { friday: delivFri, saturday: delivSat } = getDeliveryDates();
-      const friFmt = fmtDate(delivFri);
-      const satFmt = fmtDate(delivSat);
-
-      // Banner shows Saturday only (delivery is Saturdays only)
-      document.getElementById('delivery-window').textContent = satFmt;
-
-      // Auto-set delivery day to saturday always
-      let deliveryDay = 'saturday';
-      let tipPct = 0;
-      let tipCustom = 0;
-
-      function setTip(pct) {
-        if (tipPct === pct) {
-          // deselect
-          tipPct = 0;
-          document.getElementById('tip-' + pct).classList.remove('on');
-        } else {
-          tipPct = pct;
-          [8, 10, 12].forEach((p) =>
-            document
-              .getElementById('tip-' + p)
-              .classList.toggle('on', p === pct)
-          );
-          tipCustom = 0;
-          document.getElementById('tip-custom').value = '';
-        }
-        refresh();
       }
 
       function setCustomTip(val) {
