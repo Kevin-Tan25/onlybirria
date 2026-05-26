@@ -46,6 +46,26 @@
     .info-box ul li { font-size: 0.83rem; color: var(--muted); padding: 2px 0; }
     .info-box ul li::before { content: '• '; color: var(--red); font-weight: 900; }
 
+    /* ── Consome oil ── */
+    .consomo-row { background: var(--white); border: 2px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-top: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .consomo-left { display: flex; align-items: center; gap: 8px; flex: 1; }
+    .consomo-label { font-weight: 800; font-size: 0.95rem; color: var(--brown); }
+    .info-btn { width: 15px; height: 15px; border-radius: 50%; background: var(--border); color: var(--muted); border: none; font-size: 0.6rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: serif; line-height: 1; }
+    .info-tooltip { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--brown); color: var(--cream); padding: 16px 18px; border-radius: 12px; font-size: 0.85rem; line-height: 1.6; max-width: 280px; width: 90%; z-index: 999; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    .info-tooltip.show { display: block; }
+    .info-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 998; }
+    .info-overlay.show { display: block; }
+    .tooltip-close { display: block; margin-top: 12px; text-align: center; font-weight: 800; font-size: 0.8rem; color: rgba(245,237,208,0.7); cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+    .consomo-toggle { position: relative; width: 64px; height: 28px; flex-shrink: 0; }
+    .consomo-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 28px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: flex-end; padding-right: 7px; }
+    .toggle-slider .t-no { font-size: 0.65rem; font-weight: 900; color: var(--muted); display: block; }
+    .toggle-slider .t-yes { font-size: 0.65rem; font-weight: 900; color: white; display: none; }
+    .toggle-slider::before { content: ''; position: absolute; width: 22px; height: 22px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.2s; z-index: 1; }
+    .consomo-toggle input:checked + .toggle-slider { background: var(--red); justify-content: flex-start; padding-left: 7px; padding-right: 0; }
+    .consomo-toggle input:checked + .toggle-slider .t-no { display: none; }
+    .consomo-toggle input:checked + .toggle-slider .t-yes { display: block; }
+    .consomo-toggle input:checked + .toggle-slider::before { transform: translateX(36px); }
     .tip-btns { display: flex; gap: 8px; margin-bottom: 10px; }
     .tip-btn { flex: 1; padding: 10px 0; border: 2px solid var(--border); border-radius: 8px; background: var(--white); font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.9rem; color: var(--muted); cursor: pointer; transition: all 0.15s; }
     .tip-btn:hover { border-color: var(--red); color: var(--red); }
@@ -157,7 +177,7 @@
     <div class="logo">ONLY<br>BIRRIA</div>
     <div class="logo-sub">Pre-Order</div>
   </header>
-  <div class="banner">Orders open every Friday &nbsp;·&nbsp; Delivery the following Saturday</div>
+  <div class="banner">Orders open every Friday &nbsp;·&nbsp; Delivery the following Saturday &nbsp;·&nbsp; Flexible Pickup</div>
   <div id="order-banner" style="background:#FFF7E8; border-bottom: 2px solid #D4C4A0; padding: 12px 16px; text-align:center;">
     <div style="font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#7A5C4A; margin-bottom:3px;">Currently ordering for delivery on</div>
     <div style="font-family:'Alfa Slab One', serif; font-size:1.15rem; color:#C41515;" id="delivery-window"></div>
@@ -167,19 +187,40 @@
     <div class="sec-head"><div class="sec-pill">Birria Kits</div><div class="sec-line"></div></div>
 
     <div class="row">
-      <div class="row-info"><div class="row-name">The Duo</div><div class="row-desc">6 tacos, 300g beef — serves 2</div></div>
+      <div class="row-info"><div class="row-name">The Duo</div><div class="row-desc">6 tacos, 240g beef — serves 2</div></div>
       <div class="row-price">$27</div>
       <div class="qty"><button class="q-btn" onclick="adj('duo',-1)">−</button><span class="q-num" id="q-duo">0</span><button class="q-btn" onclick="adj('duo',1)">+</button></div>
     </div>
     <div class="row">
-      <div class="row-info"><div class="row-name">Family Pack</div><div class="row-desc">12 tacos, 600g beef — serves 4</div></div>
+      <div class="row-info"><div class="row-name">Family Pack</div><div class="row-desc">12 tacos, 480g beef — serves 4</div></div>
       <div class="row-price">$51</div>
       <div class="qty"><button class="q-btn" onclick="adj('family',-1)">−</button><span class="q-num" id="q-family">0</span><button class="q-btn" onclick="adj('family',1)">+</button></div>
     </div>
     <div class="row">
-      <div class="row-info"><div class="row-name">The Party 🎉</div><div class="row-desc">18 tacos, 900g beef, 3 guacs included — serves 6</div></div>
+      <div class="row-info"><div class="row-name">The Party 🎉 <span style="background:var(--red);color:white;font-size:0.65rem;font-weight:900;padding:2px 7px;border-radius:10px;letter-spacing:0.5px;text-transform:uppercase;vertical-align:middle;">Best Value</span></div><div class="row-desc">18 tacos, 720g beef, 3 guacs included — serves 6</div></div>
       <div class="row-price">$87</div>
       <div class="qty"><button class="q-btn" onclick="adj('party',-1)">−</button><span class="q-num" id="q-party">0</span><button class="q-btn" onclick="adj('party',1)">+</button></div>
+    </div>
+
+    <!-- Consomé oil option -->
+    <div class="consomo-row">
+      <div class="consomo-left">
+        <span class="consomo-label">Include consomé oil?</span>
+        <button class="info-btn" onclick="showTooltip()" type="button">i</button>
+      </div>
+      <label class="consomo-toggle">
+        <input type="checkbox" id="consomo-oil" checked onchange="refresh()">
+        <span class="toggle-slider"><span class="t-yes">YES</span><span class="t-no">NO</span></span>
+      </label>
+    </div>
+
+    <!-- Tooltip overlay -->
+    <div class="info-overlay" id="info-overlay" onclick="hideTooltip()"></div>
+    <div class="info-tooltip" id="info-tooltip">
+      🌮 <strong>What is consomé oil?</strong><br><br>
+      Consomé oil is a blend of the rich fat that naturally renders out from slow-cooking our beef, combined with chili oil from our spice blend. It&rsquo;s deeply flavoured and packed with all the goodness from the cook.<br><br>
+      Frying your tortillas in it makes the shell extra crispy and gives it that signature deep orange colour — the secret behind authentic birria tacos! 🔥
+      <span class="tooltip-close" onclick="hideTooltip()">Got it ✕</span>
     </div>
 
     <div class="sec-head"><div class="sec-pill">Add Ons</div><div class="sec-line"></div></div>
@@ -211,11 +252,6 @@
       <div class="row-info"><div class="row-name">Sprite <span class="row-desc" style="display:inline;">(355ml)</span></div></div>
       <div class="row-price">$2.75</div>
       <div class="qty"><button class="q-btn" onclick="adj('sprite',-1)">−</button><span class="q-num" id="q-sprite">0</span><button class="q-btn" onclick="adj('sprite',1)">+</button></div>
-    </div>
-    <div class="row">
-      <div class="row-info"><div class="row-name">Fuze Lemon Iced Tea <span class="row-desc" style="display:inline;">(355ml)</span></div></div>
-      <div class="row-price">$2.75</div>
-      <div class="qty"><button class="q-btn" onclick="adj('fuze',-1)">−</button><span class="q-num" id="q-fuze">0</span><button class="q-btn" onclick="adj('fuze',1)">+</button></div>
     </div>
 
     <!-- Kit Info -->
@@ -592,9 +628,9 @@
   const satLabelEl = document.getElementById('sat-label');
   if (satLabelEl) satLabelEl.textContent = satFmt;
 
-  const P = { duo:27, family:51, party:87, guac:5, taco:4.25, coke:2.75, dietcoke:2.75, sprite:2.75, fuze:2.75 };
-  const L = { duo:'The Duo', family:'Family Pack', party:'The Party', guac:'Homemade Guac', taco:'Extra Taco', coke:'Coke (355ml)', dietcoke:'Diet Coke (355ml)', sprite:'Sprite (355ml)', fuze:'Fuze Lemon Iced Tea (355ml)' };
-  const Q = { duo:0, family:0, party:0, guac:0, taco:0, coke:0, dietcoke:0, sprite:0, fuze:0 };
+  const P = { duo:27, family:51, party:87, guac:5, taco:4.25, coke:2.75, dietcoke:2.75, sprite:2.75 };
+  const L = { duo:'The Duo', family:'Family Pack', party:'The Party', guac:'Homemade Guac', taco:'Extra Taco', coke:'Coke (355ml)', dietcoke:'Diet Coke (355ml)', sprite:'Sprite (355ml)' };
+  const Q = { duo:0, family:0, party:0, guac:0, taco:0, coke:0, dietcoke:0, sprite:0 };
   const ZONES = {
     richmond:  { label:'Richmond',         fee:1, threshold:null },
     vancouver: { label:'Vancouver',        fee:2, threshold:null },
@@ -746,6 +782,7 @@
       'Fulfillment': mode === 'delivery' ? 'Delivery' : 'Pickup (Richmond)',
       'Zone': feeNote,
       'Address': mode === 'delivery' ? addr : '(Pickup — Richmond)',
+      'Consomé Oil': document.getElementById('consomo-oil').checked ? 'Yes' : 'No',
       'Delivery Day': mode === 'delivery' ? (satFmt + ' (9am–6pm)') : ('Pickup: ' + document.getElementById('f-pickup-date').value + ' at ' + document.getElementById('f-pickup-time').value),
       'Items': orderLines(),
       'Subtotal': '$' + sub.toFixed(2),
@@ -762,6 +799,7 @@
       fulfillment: mode === 'delivery' ? 'Delivery' : 'Pickup (Richmond)',
       zone:        feeNote,
       address:     mode === 'delivery' ? addr : '(Pickup)',
+      consomeOil: document.getElementById('consomo-oil').checked ? 'Yes' : 'No',
       deliveryDay: mode === 'delivery'
         ? (satFmt + ' (9am–6pm)')
         : (document.getElementById('f-pickup-date').value + ' at ' + document.getElementById('f-pickup-time').value),
@@ -773,7 +811,6 @@
       cokeQty:     Q.coke,
       dietcokeQty: Q.dietcoke,
       spriteQty:   Q.sprite,
-      fuzeQty:     Q.fuze,
       subtotal:    sub.toFixed(2),
       deliveryFee: fee.toFixed(2),
       tip:         tipAmt.toFixed(2),
@@ -802,6 +839,16 @@
     document.getElementById('success-page').style.display = 'block';
     document.getElementById('suc-name').textContent = name.split(' ')[0];
     window.scrollTo(0, 0);
+  }
+
+  // ── Consomé oil tooltip ──
+  function showTooltip() {
+    document.getElementById('info-tooltip').classList.add('show');
+    document.getElementById('info-overlay').classList.add('show');
+  }
+  function hideTooltip() {
+    document.getElementById('info-tooltip').classList.remove('show');
+    document.getElementById('info-overlay').classList.remove('show');
   }
 
   // ── Page nav ──
