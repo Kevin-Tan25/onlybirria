@@ -1230,34 +1230,7 @@
                 <option value="vancouver">Vancouver (+$2)</option>
                 <option value="eastvan">East Vancouver (+$3)</option>
                 <option value="burnaby">Burnaby (+$4)</option>
-                <option value="surrey">
-                  Surrey — North/Central only (+$7, free over $65)
-                </option>
-                <option value="newwest">
-                  New Westminster (+$6, free over $60)
-                </option>
-                <option value="coquitlam">
-                  Coquitlam (+$8, free over $70)
-                </option>
               </select>
-            </div>
-            <div
-              id="surrey-note"
-              style="
-                display: none;
-                font-size: 0.8rem;
-                color: #7a5c1a;
-                background: #fffbef;
-                border: 1.5px solid #e8c870;
-                border-radius: 7px;
-                padding: 8px 12px;
-                margin-top: -8px;
-                margin-bottom: 10px;
-              "
-            >
-              &#9888;&#65039; Surrey delivery covers
-              <strong>North &amp; Central Surrey only</strong>. South Surrey
-              &amp; White Rock are not currently available.
             </div>
             <div class="f-row">
               <label>Delivery Address *</label>
@@ -1948,9 +1921,6 @@
         vancouver: { label: 'Vancouver', fee: 2, threshold: null },
         eastvan: { label: 'East Vancouver', fee: 3, threshold: null },
         burnaby: { label: 'Burnaby', fee: 4, threshold: null },
-        surrey: { label: 'Surrey (North/Central only)', fee: 7, threshold: 65 },
-        newwest: { label: 'New Westminster', fee: 6, threshold: 60 },
-        coquitlam: { label: 'Coquitlam', fee: 8, threshold: 70 },
       };
       let mode = 'delivery';
 
@@ -1995,10 +1965,6 @@
           feeHtml = '',
           showFee = false;
 
-        const surreyNote = document.getElementById('surrey-note');
-        if (surreyNote)
-          surreyNote.style.display =
-            mode === 'delivery' && zKey === 'surrey' ? 'block' : 'none';
         if (mode === 'delivery' && zone) {
           showFee = true;
           const isFree = zone.threshold !== null && sub >= zone.threshold;
